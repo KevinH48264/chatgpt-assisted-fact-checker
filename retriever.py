@@ -107,20 +107,25 @@ def fact_check(fact_check_text, check_top_n, context_size):
     # return top result based on similarity_score
     most_similar_idx = np.argmax(similarity_score_list)
 
-    return URL_list[most_similar_idx], extracted_paragraph_list[most_similar_idx], np.round(similarity_score_list[most_similar_idx], 2)
+    return URL_list, extracted_paragraph_list, similarity_score_list, most_similar_idx
 
 
 # MAIN CODE
 highlighted_text = "The pyramids were built as tombs for the Pharaohs and their queens, and are considered one of the Seven Wonders of the Ancient World."
 check_top_n = 3
-context_size = 100
+context_size = 200
 print()
 print("Trying to fact check: ", highlighted_text)
 print()
-top_URL, extracted_paragraph, similarity_score = fact_check(highlighted_text, check_top_n, context_size)
+URL_list, extracted_paragraph_list, similarity_score_list, most_similar_idx = fact_check(highlighted_text, check_top_n, context_size)
+# most_similar_idx = 2
 print()
-print("Top Google Search result: ", top_URL)
+print("Most similar index: ", most_similar_idx)
 print()
-print("Here is the most similar matching sentence: ", extracted_paragraph)
+print("Top Google Search result: ", URL_list[most_similar_idx])
 print()
-print("Similarity score (0-1): ", similarity_score)
+print("Here is the most similar matching sentence: ", extracted_paragraph_list[most_similar_idx])
+print()
+print("Similarity score (0-1): ", np.round(similarity_score_list[most_similar_idx], 2))
+
+# TODO: Need to return most relevant sentence (so we can bold), website link, and website title
