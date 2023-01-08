@@ -1,5 +1,6 @@
 .env
 shell/
 *.pyc
-__pycache__/
+*__pycache__/
 temp.py
+app/venv/

@@ -1,0 +1,5 @@
+runtime: python310
+env_variables:
+  MY_CSE_ID: a10644ac9f98240e0
+  DEV_KEY: AIzaSyArTHHjw0yThFoB5iP3qiPFifDZLUR9zaw
+entrypoint: gunicorn -b:8000 main:app --timeout 90
