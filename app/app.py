@@ -61,23 +61,23 @@ def fact_check_index():
 
 @app.route('/')
 def index():
-  url = "http://127.0.0.1:5000"
-  highlighted_text = "pyramids of giza It stands 147 meters (481 feet) tall and was the tallest man-made structure in the world for over 3,800 years."
-  context_size = 200
+  # url = "http://127.0.0.1:5000"
+  # highlighted_text = "pyramids of giza It stands 147 meters (481 feet) tall and was the tallest man-made structure in the world for over 3,800 years."
+  # context_size = 200
   res_list = []
 
-  input_dict = { 
-    'highlighted_text' : highlighted_text, 
-    'context_size' : context_size
-  }
-  res = requests.post(url + '/fact_check', json=input_dict)
-  res_list += [{
-    'URL' : res.json()['URL'], 
-    'extracted_text' : res.json()['extracted_text'], 
-    'extracted_paragraph' : res.json()['extracted_paragraph'], 
-    'similarity_score': str(res.json()['similarity_score']), 
-    'title' : res.json()['title']
-  }]
+  # input_dict = { 
+  #   'highlighted_text' : highlighted_text, 
+  #   'context_size' : context_size
+  # }
+  # res = requests.post(url + '/fact_check', json=input_dict)
+  # res_list += [{
+  #   'URL' : res.json()['URL'], 
+  #   'extracted_text' : res.json()['extracted_text'], 
+  #   'extracted_paragraph' : res.json()['extracted_paragraph'], 
+  #   'similarity_score': str(res.json()['similarity_score']), 
+  #   'title' : res.json()['title']
+  # }]
 
   # input_dict['search_results'] = res.json()['search_results']
   # input_dict['search_index'] = 1
