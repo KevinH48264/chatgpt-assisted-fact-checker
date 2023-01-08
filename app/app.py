@@ -1,63 +1,63 @@
 from flask import Flask, render_template, jsonify, request
 from flask_cors import CORS, cross_origin
 import requests
-import app.retriever as retriever
+# import app.retriever as retriever
 
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-@app.route('/fact_check', methods=['GET', 'POST'])
-def fact_check():
-    '''
-    input_dict = { 
-      'highlighted_text' : highlighted_text, 
-      'context_size' : context_size
-    }
-    '''
+# @app.route('/fact_check', methods=['GET', 'POST'])
+# def fact_check():
+#     '''
+#     input_dict = { 
+#       'highlighted_text' : highlighted_text, 
+#       'context_size' : context_size
+#     }
+#     '''
 
-    data = request.get_json()
+#     data = request.get_json()
 
-    highlighted_text = data['highlighted_text']
-    context_size = data['context_size']
-    search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.fact_check_top_result(highlighted_text, context_size)
+#     highlighted_text = data['highlighted_text']
+#     context_size = data['context_size']
+#     search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.fact_check_top_result(highlighted_text, context_size)
     
-    return jsonify({
-        'search_results' : search_results,
-        'URL' : URL, 
-        'extracted_text' : extracted_text, 
-        'extracted_paragraph' : extracted_paragraph, 
-        'similarity_score': str(similarity_score), 
-        'title' : title
-    })
+#     return jsonify({
+#         'search_results' : search_results,
+#         'URL' : URL, 
+#         'extracted_text' : extracted_text, 
+#         'extracted_paragraph' : extracted_paragraph, 
+#         'similarity_score': str(similarity_score), 
+#         'title' : title
+#     })
 
-@app.route('/fact_check_index', methods=['GET', 'POST'])
-def fact_check_index():
-    '''
-    input_dict = { 
-      'highlighted_text' : highlighted_text, 
-      'context_size' : context_size,
-      'search_results' : 'search_results',
-      'search_index' : search_index
-    }
-    '''
+# @app.route('/fact_check_index', methods=['GET', 'POST'])
+# def fact_check_index():
+#     '''
+#     input_dict = { 
+#       'highlighted_text' : highlighted_text, 
+#       'context_size' : context_size,
+#       'search_results' : 'search_results',
+#       'search_index' : search_index
+#     }
+#     '''
 
-    data = request.get_json()
+#     data = request.get_json()
 
-    search_results = data['search_results']
-    search_index = data['search_index']
-    highlighted_text = data['highlighted_text']
-    context_size = data['context_size']
+#     search_results = data['search_results']
+#     search_index = data['search_index']
+#     highlighted_text = data['highlighted_text']
+#     context_size = data['context_size']
 
-    URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.extract_given_search_index(highlighted_text, search_results, context_size, search_index)
+#     URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.extract_given_search_index(highlighted_text, search_results, context_size, search_index)
     
-    return jsonify({
-        'URL' : URL, 
-        'extracted_text' : extracted_text, 
-        'extracted_paragraph' : extracted_paragraph, 
-        'similarity_score': str(similarity_score), 
-        'title' : title
-    })
+#     return jsonify({
+#         'URL' : URL, 
+#         'extracted_text' : extracted_text, 
+#         'extracted_paragraph' : extracted_paragraph, 
+#         'similarity_score': str(similarity_score), 
+#         'title' : title
+#     })
 
 @app.route('/')
 def index():
