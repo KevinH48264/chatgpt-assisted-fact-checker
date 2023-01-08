@@ -3,11 +3,11 @@ from bs4 import BeautifulSoup
 from bs4.element import Comment
 import requests
 from sentence_transformers import SentenceTransformer, util
-import nltk
+# import nltk
 import numpy as np
 import os
 from dotenv import load_dotenv
-nltk.download('punkt')
+# nltk.download('punkt')
 model = SentenceTransformer('all-MiniLM-L6-v2') # or all-mpnet-base-v2
 
 # ENVIRONMENT VARS
@@ -52,7 +52,10 @@ def match_website_text(fact_check_text, website_text):
     # Match closest sentence in website to fact check
     # Two lists of sentences
     fact_check_text_sentence = [fact_check_text]
-    website_sentences = nltk.sent_tokenize(website_text)
+    # website_sentences = nltk.sent_tokenize(website_text)
+    website_sentences = website_text.split('.') # TODO: switch to NLTK because splitting is not very effective
+    # print("website_text", website_text)
+    # print("website sentences: ", website_sentences)
 
     #Compute embedding for both lists
     embeddings1 = model.encode(fact_check_text_sentence, convert_to_tensor=True)

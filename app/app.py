@@ -79,10 +79,10 @@ def index():
     'title' : res.json()['title']
   }]
 
-  input_dict['search_results'] = res.json()['search_results']
-  input_dict['search_index'] = 1
-  res = requests.post(url + '/fact_check_index', json=input_dict)
-  res_list += [res.json()]
+  # input_dict['search_results'] = res.json()['search_results']
+  # input_dict['search_index'] = 1
+  # res = requests.post(url + '/fact_check_index', json=input_dict)
+  # res_list += [res.json()]
   return res_list
 
 # if __name__ == "__main__":
