@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, Response, render_template, jsonify, request
 from flask_cors import CORS, cross_origin
 import requests
 import retriever as retriever
@@ -6,9 +6,16 @@ import retriever as retriever
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
-url = "http://0.0.0.0:8000/"
+url = "http://0.0.0.0:8080/"
 highlighted_text = "pyramids of giza It stands 147 meters (481 feet) tall and was the tallest man-made structure in the world for over 3,800 years."
 context_size = 200
+
+# Health check route
+@app.route("/isalive")
+def is_alive():
+    print("/isalive request")
+    status_code = Response(status=200)
+    return status_code
 
 @app.route('/fact_check', methods=['GET', 'POST'])
 def fact_check():
@@ -18,10 +25,11 @@ def fact_check():
       'context_size' : context_size
     }
     '''
-    # print("fact checking!")
-    # if request.method == 'GET':
-    #   global highlighted_text
-    #   global context_size
+    # WORKS WITH THIS COMMENTED OUT
+    print("fact checking!")
+    if request.method == 'GET':
+      global highlighted_text
+      global context_size
     if request.method == 'POST':
       print("WASSUP")
 
@@ -30,19 +38,19 @@ def fact_check():
       highlighted_text = data['highlighted_text']
       context_size = data['context_size']
 
-      print("SEARCHING")
-      search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.fact_check_top_result(highlighted_text, context_size)
-      # search_results = retriever.fact_check_top_result(highlighted_text, context_size)
+    print("SEARCHING")
+    search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.fact_check_top_result(highlighted_text, context_size)
+    # search_results = retriever.fact_check_top_result(highlighted_text, context_size)
 
-      print("DONE SEARCHING")
-      return jsonify({
-          'search_results' : search_results,
-          'URL' : URL, 
-          'extracted_text' : extracted_text, 
-          'extracted_paragraph' : extracted_paragraph, 
-          'similarity_score': str(similarity_score), 
-          'title' : title
-      })
+    print("DONE SEARCHING")
+    return jsonify({
+        'search_results' : search_results,
+        'URL' : URL, 
+        'extracted_text' : extracted_text, 
+        'extracted_paragraph' : extracted_paragraph, 
+        'similarity_score': str(similarity_score), 
+        'title' : title
+    })
 
 @app.route('/fact_check_index', methods=['GET', 'POST'])
 def fact_check_index():
@@ -99,4 +107,4 @@ def index():
   return res_list
 
 if __name__ == "__main__":
-  app.run()
+  app.run(debug=True, host="0.0.0.0", port=8080)
