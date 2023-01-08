@@ -15,20 +15,23 @@ def fact_check():
       'context_size' : context_size
     }
     '''
+    print("WASSUP")
 
     data = request.get_json()
 
     highlighted_text = data['highlighted_text']
     context_size = data['context_size']
-    search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.fact_check_top_result(highlighted_text, context_size)
-    
+    # search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.fact_check_top_result(highlighted_text, context_size)
+    search_results = retriever.fact_check_top_result(highlighted_text, context_size)
+
+    print("GOING BACK")
     return jsonify({
         'search_results' : search_results,
-        'URL' : URL, 
-        'extracted_text' : extracted_text, 
-        'extracted_paragraph' : extracted_paragraph, 
-        'similarity_score': str(similarity_score), 
-        'title' : title
+        # 'URL' : URL, 
+        # 'extracted_text' : extracted_text, 
+        # 'extracted_paragraph' : extracted_paragraph, 
+        # 'similarity_score': str(similarity_score), 
+        # 'title' : title
     })
 
 @app.route('/fact_check_index', methods=['GET', 'POST'])
@@ -72,13 +75,14 @@ def index():
     'context_size' : context_size
   }
   res = requests.post(url + '/fact_check', json=input_dict)
-  res_list += [{
-    'URL' : res.json()['URL'], 
-    'extracted_text' : res.json()['extracted_text'], 
-    'extracted_paragraph' : res.json()['extracted_paragraph'], 
-    'similarity_score': str(res.json()['similarity_score']), 
-    'title' : res.json()['title']
-  }]
+  print(res.json())
+  # res_list += [{
+  #   'URL' : res.json()['URL'], 
+  #   'extracted_text' : res.json()['extracted_text'], 
+  #   'extracted_paragraph' : res.json()['extracted_paragraph'], 
+  #   'similarity_score': str(res.json()['similarity_score']), 
+  #   'title' : res.json()['title']
+  # }]
 
   # input_dict['search_results'] = res.json()['search_results']
   # input_dict['search_index'] = 1
