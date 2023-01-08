@@ -21,17 +21,17 @@ def fact_check():
 
     highlighted_text = data['highlighted_text']
     context_size = data['context_size']
-    # search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.fact_check_top_result(highlighted_text, context_size)
-    search_results = retriever.fact_check_top_result(highlighted_text, context_size)
+    search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.fact_check_top_result(highlighted_text, context_size)
+    # search_results = retriever.fact_check_top_result(highlighted_text, context_size)
 
     print("GOING BACK")
     return jsonify({
         'search_results' : search_results,
-        # 'URL' : URL, 
-        # 'extracted_text' : extracted_text, 
-        # 'extracted_paragraph' : extracted_paragraph, 
-        # 'similarity_score': str(similarity_score), 
-        # 'title' : title
+        'URL' : URL, 
+        'extracted_text' : extracted_text, 
+        'extracted_paragraph' : extracted_paragraph, 
+        'similarity_score': str(similarity_score), 
+        'title' : title
     })
 
 @app.route('/fact_check_index', methods=['GET', 'POST'])
