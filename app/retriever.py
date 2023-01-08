@@ -189,7 +189,7 @@ def fact_check_top_result(fact_check_text, context_size=100):
     # URL, extracted_text, extracted_paragraph, similarity_score, title = extract_given_search_index(fact_check_text, search_results, context_size, 0)
 
     # return search_results, URL, extracted_text, extracted_paragraph, similarity_score, title
-    return ["HELLLLLLLLOOOOOOOOOOOO WORLD"]
+    return search_results
 
 # MAIN CODE
 # highlighted_text = "The pyramids are considered one of the Seven Wonders of the Ancient World."
