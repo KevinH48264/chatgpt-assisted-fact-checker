@@ -2,8 +2,8 @@ from googleapiclient.discovery import build
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 import requests
-from sentence_transformers import util
 # import nltk
+from scipy.spatial.distance import cosine
 import numpy as np
 import os
 from dotenv import load_dotenv
@@ -70,12 +70,17 @@ def match_website_text(fact_check_text, website_text):
     embeddings1 = model.encode(fact_check_text_sentence, convert_to_tensor=True)
     embeddings2 = model.encode(website_sentences, convert_to_tensor=True)
 
+    print(embeddings1.shape)
+    print(embeddings2.shape)
+
     #Compute cosine-similarities
-    cosine_scores = util.cos_sim(embeddings1, embeddings2)
+    cosine_scores = []
+    for emb2 in embeddings2:
+        cosine_scores.append([1 - cosine(embeddings1[0], emb2)])
 
     #Output the pairs with their score
-    most_similar_idx = np.argmax(cosine_scores[0].cpu())
-    similarity_score = cosine_scores[0][most_similar_idx].cpu().numpy()
+    most_similar_idx = np.argmax(cosine_scores[0])
+    similarity_score = cosine_scores[0][most_similar_idx]
     target_text = website_sentences[most_similar_idx]
     # print("Most similar sentence: ", target_text, " \nWith a similarity score of ", similarity_score)
 
