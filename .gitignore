@@ -2,3 +2,4 @@
 shell/
 *.pyc
 __pycache__/
+temp.py

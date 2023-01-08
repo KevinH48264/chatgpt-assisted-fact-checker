@@ -19,14 +19,11 @@ import torch.nn.functional as F
 # model = SentenceTransformer('all-MiniLM-L6-v2') # or all-mpnet-base-v2
 # model = SentenceTransformer('paraphrase-albert-small-v2')
 # Load the model
-# with open('tokenizer.pkl', 'rb') as f:
-#   tokenizer = pickle.load(f)
+with open('tokenizer.pkl', 'rb') as f:
+  tokenizer = pickle.load(f)
 
-# with open('model.pkl', 'rb') as f:
-#   model = pickle.load(f)
-
-tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
-model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
+with open('model.pkl', 'rb') as f:
+  model = pickle.load(f)
 
 # ENVIRONMENT VARS
 load_dotenv()
@@ -194,19 +191,19 @@ def fact_check_top_result(fact_check_text, context_size=100):
     return search_results, URL, extracted_text, extracted_paragraph, similarity_score, title
 
 # MAIN CODE
-highlighted_text = "The pyramids are considered one of the Seven Wonders of the Ancient World."
-check_top_n = 1
-context_size = 200
-print()
-print("Trying to fact check: ", highlighted_text)
-print()
-search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = fact_check_top_result(highlighted_text, context_size)
-print("Here is the most similar matching sentence: ", extracted_paragraph)
-print()
-print("Similarity score (0-1): ", similarity_score)
-print("Top Google Search result: ", URL)
-print("Title: ", title)
-print()
+# highlighted_text = "The pyramids are considered one of the Seven Wonders of the Ancient World."
+# check_top_n = 1
+# context_size = 200
+# print()
+# print("Trying to fact check: ", highlighted_text)
+# print()
+# search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = fact_check_top_result(highlighted_text, context_size)
+# print("Here is the most similar matching sentence: ", extracted_paragraph)
+# print()
+# print("Similarity score (0-1): ", similarity_score)
+# print("Top Google Search result: ", URL)
+# print("Title: ", title)
+# print()
 
 # print()
 # print("Trying to fact check with second google search result")
