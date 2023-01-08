@@ -9,9 +9,11 @@ google-auth-httplib2==0.1.0
 googleapis-common-protos==1.57.1
 beautifulsoup4==4.11.1
 bs4==0.0.1
-numpy==1.24.1
+# numpy==1.24.1
+numpy==1.21.6
 python-dotenv==0.21.0
-scipy==1.10.0
+# scipy==1.10.0
+scipy==1.4.1
 
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==1.13.1

@@ -20,10 +20,14 @@ import torch.nn.functional as F
 # model = SentenceTransformer('paraphrase-albert-small-v2')
 # Load the model
 with open('tokenizer.pkl', 'rb') as f:
-  tokenizer = pickle.load(f)
+    print("tokenizer")
+    tokenizer = pickle.load(f)
+    print(tokenizer)
 
 with open('model.pkl', 'rb') as f:
-  model = pickle.load(f)
+    print('model')
+    model = pickle.load(f)
+    print(model)
 # tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
 # model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
 
@@ -204,6 +208,8 @@ def fact_check_top_result(fact_check_text, context_size=100):
 
 # MAIN CODE
 # highlighted_text = "The pyramids are considered one of the Seven Wonders of the Ancient World."
+# res = fact_check_top_result(highlighted_text)
+# print(res)
 # check_top_n = 1
 # context_size = 200
 # print()
