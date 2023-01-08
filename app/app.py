@@ -61,6 +61,7 @@ def fact_check_index():
 
 @app.route('/')
 def index():
+  print("RUNNING APP!")
   url = "https://check-gpt.herokuapp.com/"
   highlighted_text = "pyramids of giza It stands 147 meters (481 feet) tall and was the tallest man-made structure in the world for over 3,800 years."
   context_size = 200
