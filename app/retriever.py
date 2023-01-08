@@ -8,7 +8,8 @@ import numpy as np
 import os
 from dotenv import load_dotenv
 # nltk.download('punkt')
-model = SentenceTransformer('all-MiniLM-L6-v2') # or all-mpnet-base-v2
+# model = SentenceTransformer('all-MiniLM-L6-v2') # or all-mpnet-base-v2
+model = SentenceTransformer('all-distilroberta-v1 ')
 
 # ENVIRONMENT VARS
 load_dotenv()
