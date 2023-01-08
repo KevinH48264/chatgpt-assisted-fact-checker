@@ -72,7 +72,8 @@ def match_website_text(fact_check_text, website_text):
 # Extract relevant paragraph webpage 
 def extract_paragraph(target_text, all_text, OFFSET):
   partitions = all_text.partition(target_text)
-  return "..." + partitions[0][-OFFSET:] + partitions[1] + partitions[2][:OFFSET] + "..."
+  # TODO: add <b> tag to put between partitions[1]?
+  return "..." + partitions[0][-OFFSET:] + " <b> " + partitions[1] + " </b> " + partitions[2][:OFFSET] + "..."
 
 def extract_from_top_URLS(fact_check_text, search_results, num_urls_to_check, context_size):
     URL_list, extracted_paragraph_list, similarity_score_list = np.array([]), np.array([]), np.array([])
@@ -94,8 +95,28 @@ def extract_from_top_URLS(fact_check_text, search_results, num_urls_to_check, co
 
     return URL_list, extracted_paragraph_list, similarity_score_list
 
+# use this for bringing other results
+def extract_given_search_index(fact_check_text, search_results, context_size, search_index):
+    URL = search_results[search_index].get('link')
+    title = search_results[search_index].get('title')
+
+    # Web scrape top google search result
+    website_text = text_from_URL(URL)
+
+    # Match closest sentence in website to fact check
+    similarity_score, target_text = match_website_text(fact_check_text, website_text)
+
+    # Extract relevant paragraph webpage 
+    extracted_paragraph = extract_paragraph(target_text, website_text, context_size)
+
+    if similarity_score < 0.25:
+        return URL, "", "We could not scan this website. Please use the website link or use the next search result.", "Unknown", title
+
+    return URL, target_text, extracted_paragraph, np.round(similarity_score, 2), title
+
 # MAIN CODE below, runtime: 20 sec
-def fact_check(fact_check_text, check_top_n, context_size):
+# function to return extracted paragraphs and generating search results list
+def fact_check(fact_check_text, check_top_n, context_size=100):
     print("Starting to find a top fact check source")
 
     # Retrieve top google search result
@@ -109,23 +130,40 @@ def fact_check(fact_check_text, check_top_n, context_size):
 
     return URL_list, extracted_paragraph_list, similarity_score_list, most_similar_idx
 
+# function to return top search index paragraph and search results
+def fact_check_top_result(fact_check_text, context_size=100):
+    print("Starting to find a top fact check source")
+
+    # Retrieve top google search result
+    search_results = retrieve_top_search_result(fact_check_text)
+
+    # Retrieve URL, paragraph, and similarity_score for top result
+    URL, extracted_text, extracted_paragraph, similarity_score, title = extract_given_search_index(fact_check_text, search_results, context_size, 0)
+
+    return search_results, URL, extracted_text, extracted_paragraph, similarity_score, title
 
 # MAIN CODE
-highlighted_text = "The pyramids were built as tombs for the Pharaohs and their queens, and are considered one of the Seven Wonders of the Ancient World."
-check_top_n = 3
-context_size = 200
-print()
-print("Trying to fact check: ", highlighted_text)
-print()
-URL_list, extracted_paragraph_list, similarity_score_list, most_similar_idx = fact_check(highlighted_text, check_top_n, context_size)
-# most_similar_idx = 2
-print()
-print("Most similar index: ", most_similar_idx)
-print()
-print("Top Google Search result: ", URL_list[most_similar_idx])
-print()
-print("Here is the most similar matching sentence: ", extracted_paragraph_list[most_similar_idx])
-print()
-print("Similarity score (0-1): ", np.round(similarity_score_list[most_similar_idx], 2))
+# highlighted_text = "pyramids of giza It stands 147 meters (481 feet) tall and was the tallest man-made structure in the world for over 3,800 years."
+# check_top_n = 1
+# context_size = 200
+# print()
+# print("Trying to fact check: ", highlighted_text)
+# print()
+# search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = fact_check_top_result(highlighted_text, context_size)
+# print("Here is the most similar matching sentence: ", extracted_paragraph)
+# print()
+# print("Similarity score (0-1): ", similarity_score)
+# print("Top Google Search result: ", URL)
+# print("Title: ", title)
+# print()
 
-# TODO: Need to return most relevant sentence (so we can bold), website link, and website title
+# print()
+# print("Trying to fact check with second google search result")
+# URL, extracted_text, extracted_paragraph, similarity_score, title = extract_given_search_index(highlighted_text, search_results, context_size, 1)
+# print()
+# print("Here is the most similar matching sentence: ", extracted_paragraph)
+# print()
+# print("Similarity score (0-1): ", similarity_score)
+# print("Top Google Search result: ", URL)
+# print("Title: ", title)
+# print()
