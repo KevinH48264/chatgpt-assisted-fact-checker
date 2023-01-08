@@ -8,6 +8,9 @@ import numpy as np
 import os
 from dotenv import load_dotenv
 import pickle
+from transformers import AutoTokenizer, AutoModel
+import torch
+import torch.nn.functional as F
 # nltk.download('punkt') # Memory: 11MB
 
 # all-MiniLM-L6-v2: speed-14200, size-80Mb, server-640M
@@ -16,8 +19,14 @@ import pickle
 # model = SentenceTransformer('all-MiniLM-L6-v2') # or all-mpnet-base-v2
 # model = SentenceTransformer('paraphrase-albert-small-v2')
 # Load the model
-with open('model.pkl', 'rb') as f:
-  model = pickle.load(f)
+# with open('tokenizer.pkl', 'rb') as f:
+#   tokenizer = pickle.load(f)
+
+# with open('model.pkl', 'rb') as f:
+#   model = pickle.load(f)
+
+tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
+model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
 
 # ENVIRONMENT VARS
 load_dotenv()
@@ -49,7 +58,6 @@ def tag_visible(element):
         return False
     return True
 
-
 def text_from_URL(URL):
     r = requests.get(URL)
     soup = BeautifulSoup(r.content, 'html.parser')
@@ -57,21 +65,47 @@ def text_from_URL(URL):
     visible_texts = filter(tag_visible, texts)  
     return " ".join(t.strip() for t in visible_texts)
 
+#Mean Pooling - Take attention mask into account for correct averaging
+def mean_pooling(model_output, attention_mask):
+    token_embeddings = model_output[0] #First element of model_output contains all token embeddings
+    input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+
+def encode_with_model(sentences):
+    # Tokenize sentences
+    encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
+
+    # Compute token embeddings
+    with torch.no_grad():
+        model_output = model(**encoded_input)
+
+    # Perform pooling
+    sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
+
+    # Normalize embeddings
+    sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
+
+    return sentence_embeddings
+
 def match_website_text(fact_check_text, website_text):
     # Match closest sentence in website to fact check
     # Two lists of sentences
     fact_check_text_sentence = [fact_check_text]
     # website_sentences = nltk.sent_tokenize(website_text)
+
+    # TODO: use the tokenizer instead of splitting, or use nltk bc nltk isn't that intensive
     website_sentences = website_text.split('.') # TODO: switch to NLTK because splitting is not very effective
     # print("website_text", website_text)
     # print("website sentences: ", website_sentences)
 
     #Compute embedding for both lists
-    embeddings1 = model.encode(fact_check_text_sentence, convert_to_tensor=True)
-    embeddings2 = model.encode(website_sentences, convert_to_tensor=True)
+    embeddings1 = encode_with_model(fact_check_text_sentence)
+    embeddings2 = encode_with_model(website_sentences)
+    # embeddings1 = model.encode(fact_check_text_sentence, convert_to_tensor=True)
+    # embeddings2 = model.encode(website_sentences, convert_to_tensor=True)
 
-    print(embeddings1.shape)
-    print(embeddings2.shape)
+    # print(embeddings1.shape)
+    # print(embeddings2.shape)
 
     #Compute cosine-similarities
     cosine_scores = []
@@ -160,19 +194,19 @@ def fact_check_top_result(fact_check_text, context_size=100):
     return search_results, URL, extracted_text, extracted_paragraph, similarity_score, title
 
 # MAIN CODE
-# highlighted_text = "The pyramids were built as tombs for the Pharaohs and their queens, and are considered one of the Seven Wonders of the Ancient World."
-# check_top_n = 1
-# context_size = 200
-# print()
-# print("Trying to fact check: ", highlighted_text)
-# print()
-# search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = fact_check_top_result(highlighted_text, context_size)
-# print("Here is the most similar matching sentence: ", extracted_paragraph)
-# print()
-# print("Similarity score (0-1): ", similarity_score)
-# print("Top Google Search result: ", URL)
-# print("Title: ", title)
-# print()
+highlighted_text = "The pyramids are considered one of the Seven Wonders of the Ancient World."
+check_top_n = 1
+context_size = 200
+print()
+print("Trying to fact check: ", highlighted_text)
+print()
+search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = fact_check_top_result(highlighted_text, context_size)
+print("Here is the most similar matching sentence: ", extracted_paragraph)
+print()
+print("Similarity score (0-1): ", similarity_score)
+print("Top Google Search result: ", URL)
+print("Title: ", title)
+print()
 
 # print()
 # print("Trying to fact check with second google search result")
