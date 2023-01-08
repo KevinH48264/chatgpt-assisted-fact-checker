@@ -124,6 +124,7 @@ def extract_paragraph(target_text, all_text, OFFSET):
   return "..." + partitions[0][-OFFSET:] + " <b> " + partitions[1] + " </b> " + partitions[2][:OFFSET] + "..."
 
 def extract_from_top_URLS(fact_check_text, search_results, num_urls_to_check, context_size):
+    print("extract_from_top_URLS!!")
     URL_list, extracted_paragraph_list, similarity_score_list = np.array([]), np.array([]), np.array([])
     for i in range(num_urls_to_check):
         URL = search_results[i].get('link')
@@ -145,16 +146,20 @@ def extract_from_top_URLS(fact_check_text, search_results, num_urls_to_check, co
 
 # use this for bringing other results
 def extract_given_search_index(fact_check_text, search_results, context_size, search_index):
+    print("extract_given_search_index!!")
     URL = search_results[search_index].get('link')
     title = search_results[search_index].get('title')
 
     # Web scrape top google search result
+    print("text_from_URL")
     website_text = text_from_URL(URL)
 
     # Match closest sentence in website to fact check
+    print("match_website_text")
     similarity_score, target_text = match_website_text(fact_check_text, website_text)
 
     # Extract relevant paragraph webpage 
+    print("extract_paragraph")
     extracted_paragraph = extract_paragraph(target_text, website_text, context_size)
 
     if similarity_score < 0.25:
@@ -165,8 +170,6 @@ def extract_given_search_index(fact_check_text, search_results, context_size, se
 # MAIN CODE below, runtime: 20 sec
 # function to return extracted paragraphs and generating search results list
 def fact_check(fact_check_text, check_top_n, context_size=100):
-    print("Starting to find a top fact check source")
-
     # Retrieve top google search result
     search_results = retrieve_top_search_result(fact_check_text)
 
