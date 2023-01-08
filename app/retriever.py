@@ -2,18 +2,22 @@ from googleapiclient.discovery import build
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 import requests
-from sentence_transformers import SentenceTransformer, util
+from sentence_transformers import util
 # import nltk
 import numpy as np
 import os
 from dotenv import load_dotenv
+import pickle
 # nltk.download('punkt') # Memory: 11MB
 
 # all-MiniLM-L6-v2: speed-14200, size-80Mb, server-640M
 # all-distilroberta-v1: speed-4000, size-290Mb, server-1279M
 # paraphrase-albert-small-v2: speed-5000(slow), size-43Mb (smallest), server-580M
 # model = SentenceTransformer('all-MiniLM-L6-v2') # or all-mpnet-base-v2
-model = SentenceTransformer('paraphrase-albert-small-v2')
+# model = SentenceTransformer('paraphrase-albert-small-v2')
+# Load the model
+with open('model.pkl', 'rb') as f:
+  model = pickle.load(f)
 
 # ENVIRONMENT VARS
 load_dotenv()
@@ -151,19 +155,19 @@ def fact_check_top_result(fact_check_text, context_size=100):
     return search_results, URL, extracted_text, extracted_paragraph, similarity_score, title
 
 # MAIN CODE
-# highlighted_text = "pyramids of giza It stands 147 meters (481 feet) tall and was the tallest man-made structure in the world for over 3,800 years."
-# check_top_n = 1
-# context_size = 200
-# print()
-# print("Trying to fact check: ", highlighted_text)
-# print()
-# search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = fact_check_top_result(highlighted_text, context_size)
-# print("Here is the most similar matching sentence: ", extracted_paragraph)
-# print()
-# print("Similarity score (0-1): ", similarity_score)
-# print("Top Google Search result: ", URL)
-# print("Title: ", title)
-# print()
+highlighted_text = "The pyramids were built as tombs for the Pharaohs and their queens, and are considered one of the Seven Wonders of the Ancient World."
+check_top_n = 1
+context_size = 200
+print()
+print("Trying to fact check: ", highlighted_text)
+print()
+search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = fact_check_top_result(highlighted_text, context_size)
+print("Here is the most similar matching sentence: ", extracted_paragraph)
+print()
+print("Similarity score (0-1): ", similarity_score)
+print("Top Google Search result: ", URL)
+print("Title: ", title)
+print()
 
 # print()
 # print("Trying to fact check with second google search result")
