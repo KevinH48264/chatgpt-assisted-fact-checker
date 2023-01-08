@@ -155,19 +155,19 @@ def fact_check_top_result(fact_check_text, context_size=100):
     return search_results, URL, extracted_text, extracted_paragraph, similarity_score, title
 
 # MAIN CODE
-highlighted_text = "The pyramids were built as tombs for the Pharaohs and their queens, and are considered one of the Seven Wonders of the Ancient World."
-check_top_n = 1
-context_size = 200
-print()
-print("Trying to fact check: ", highlighted_text)
-print()
-search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = fact_check_top_result(highlighted_text, context_size)
-print("Here is the most similar matching sentence: ", extracted_paragraph)
-print()
-print("Similarity score (0-1): ", similarity_score)
-print("Top Google Search result: ", URL)
-print("Title: ", title)
-print()
+# highlighted_text = "The pyramids were built as tombs for the Pharaohs and their queens, and are considered one of the Seven Wonders of the Ancient World."
+# check_top_n = 1
+# context_size = 200
+# print()
+# print("Trying to fact check: ", highlighted_text)
+# print()
+# search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = fact_check_top_result(highlighted_text, context_size)
+# print("Here is the most similar matching sentence: ", extracted_paragraph)
+# print()
+# print("Similarity score (0-1): ", similarity_score)
+# print("Top Google Search result: ", URL)
+# print("Title: ", title)
+# print()
 
 # print()
 # print("Trying to fact check with second google search result")
