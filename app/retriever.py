@@ -70,18 +70,23 @@ def mean_pooling(model_output, attention_mask):
 
 def encode_with_model(sentences):
     # Tokenize sentences
+    print("tokenizing")
     encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
 
     # Compute token embeddings
+    print("computing")
     with torch.no_grad():
         model_output = model(**encoded_input)
 
     # Perform pooling
+    print("pooling")
     sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
 
     # Normalize embeddings
+    print("normalizing")
     sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
 
+    print("sending back")
     return sentence_embeddings
 
 def match_website_text(fact_check_text, website_text):
@@ -96,6 +101,7 @@ def match_website_text(fact_check_text, website_text):
     # print("website sentences: ", website_sentences)
 
     #Compute embedding for both lists
+    print("encoding")
     embeddings1 = encode_with_model(fact_check_text_sentence)
     embeddings2 = encode_with_model(website_sentences)
     # embeddings1 = model.encode(fact_check_text_sentence, convert_to_tensor=True)
@@ -105,6 +111,7 @@ def match_website_text(fact_check_text, website_text):
     # print(embeddings2.shape)
 
     #Compute cosine-similarities
+    print("getting embedding scores")
     cosine_scores = []
     for emb2 in embeddings2:
         cosine_scores.append([1 - cosine(embeddings1[0], emb2)])
