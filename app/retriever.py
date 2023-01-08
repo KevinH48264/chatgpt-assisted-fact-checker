@@ -7,13 +7,13 @@ from sentence_transformers import SentenceTransformer, util
 import numpy as np
 import os
 from dotenv import load_dotenv
-# nltk.download('punkt')
+# nltk.download('punkt') # Memory: 11MB
 
 # all-MiniLM-L6-v2: speed-14200, size-80Mb
-# all-distilroberta-v1: speed-4000, size-290Mb
-# 
+# all-distilroberta-v1: speed-4000, size-290Mb, 1279M
+# paraphrase-albert-small-v2: speed-5000(slow), size-43Mb (smallest)
 # model = SentenceTransformer('all-MiniLM-L6-v2') # or all-mpnet-base-v2
-model = SentenceTransformer('all-distilroberta-v1')
+model = SentenceTransformer('paraphrase-albert-small-v2')
 
 # ENVIRONMENT VARS
 load_dotenv()
