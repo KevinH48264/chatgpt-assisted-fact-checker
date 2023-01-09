@@ -7,7 +7,7 @@ from scipy.spatial.distance import cosine
 import numpy as np
 import os
 from dotenv import load_dotenv
-import model as modelpy
+import pickle
 from transformers import AutoTokenizer, AutoModel
 import torch
 import torch.nn.functional as F
@@ -21,8 +21,12 @@ import re
 # model = SentenceTransformer('all-MiniLM-L6-v2') # or all-mpnet-base-v2
 # model = SentenceTransformer('paraphrase-albert-small-v2')
 # Load the model
-tokenizer = modelpy.tokenizer
-model = modelpy.model
+with open('tokenizer.pkl', 'rb') as f:
+  tokenizer = pickle.load(f)
+
+with open('model.pkl', 'rb') as f:
+  model = pickle.load(f)
+  model.eval()
 
 num_sentences_to_use = 40
 # tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')

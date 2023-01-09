@@ -4,3 +4,4 @@ shell/
 *__pycache__/
 temp.py
 app/venv/
+app/__pycache__/
