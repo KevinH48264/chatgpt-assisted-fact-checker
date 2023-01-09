@@ -26,23 +26,23 @@ def fact_check():
     }
     '''
     # WORKS WITH THIS COMMENTED OUT
-    print("fact checking!")
+    # print("fact checking!")
     if request.method == 'GET':
       global highlighted_text
       global context_size
     if request.method == 'POST':
-      print("WASSUP")
+    #   print("WASSUP")
 
       data = request.get_json()
 
       highlighted_text = data['highlighted_text']
       context_size = data['context_size']
 
-    print("SEARCHING")
+    # print("SEARCHING")
     search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.fact_check_top_result(highlighted_text, context_size)
     # search_results = retriever.fact_check_top_result(highlighted_text, context_size)
 
-    print("DONE SEARCHING")
+    # print("DONE SEARCHING")
     return jsonify({
         'search_results' : search_results,
         'URL' : URL, 
@@ -90,15 +90,16 @@ def index():
     'context_size' : context_size
   }
   res = input_dict
-  # res = requests.post(url + '/fact_check', json=input_dict)
-  # print(res.json())
-  # res_list += [{
-  #   'URL' : res.json()['URL'], 
-  #   'extracted_text' : res.json()['extracted_text'], 
-  #   'extracted_paragraph' : res.json()['extracted_paragraph'], 
-  #   'similarity_score': str(res.json()['similarity_score']), 
-  #   'title' : res.json()['title']
-  # }]
+  res = requests.post(url + '/fact_check', json=input_dict)
+#   print(res.json())
+  res_list += [{
+    'URL' : res.json()['URL'], 
+    'extracted_text' : res.json()['extracted_text'], 
+    'extracted_paragraph' : res.json()['extracted_paragraph'], 
+    'similarity_score': str(res.json()['similarity_score']), 
+    'title' : res.json()['title']
+  }]
+  print("DONE")
 
   # input_dict['search_results'] = res.json()['search_results']
   # input_dict['search_index'] = 1

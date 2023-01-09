@@ -12,6 +12,11 @@ from transformers import AutoTokenizer, AutoModel
 import torch
 import torch.nn.functional as F
 import re
+import psutil
+import os
+
+MEMORY_CAP = 512000000000
+
 # from sentence_transformers import SentenceTransformer, util
 # nltk.download('punkt') # Memory: 11MB
 
@@ -46,11 +51,6 @@ def google_search(search_term, cse_id, **kwargs):
 
 def retrieve_top_search_result(fact_check_text):
     results = google_search(fact_check_text, my_cse_id, num=3, lr="lang_en")
-    # for result in results:
-    #     print(result.get('link'))
-
-    # top_URL = results[1].get('link')
-    # print("Top URL hit: ", top_URL)
     return results
 
 # 2. WEB SCRAPE
@@ -76,27 +76,30 @@ def mean_pooling(model_output, attention_mask):
     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
 def encode_with_model(sentences):
+    global MEMORY_CAP
     # Tokenize sentences
     # num_sentences_to_use = 60
 
-    # print("num_sentences_to_use", num_sentences_to_use)
-    # print("tokenizing", len(sentences[-num_sentences_to_use:])) # 280 sentences?
     # encoded_input = tokenizer(sentences[-num_sentences_to_use:], padding=True, truncation=True, return_tensors='pt')
     encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
-    print("ENCODED INPUTS", len(encoded_input), len(encoded_input[0]), len(sentences))
-    print(encoded_input[0])
+    # print("ENCODED INPUTS", len(encoded_input), len(encoded_input[0]), len(sentences))
+    # print(encoded_input[0])
     # Compute token embeddings
-    print("computing")
+    process = psutil.Process(os.getpid())
+    print("computing, CURRENT MEMORY USAGE: ", process.memory_info().rss / 1000000)
+    if process.memory_info().rss > MEMORY_CAP:
+        process.kill()
     with torch.no_grad():
         model_output = model(**encoded_input)
-    print("done computing")
+    process = psutil.Process(os.getpid())
+    print("done computing, CURRENT MEMORY USAGE: ", process.memory_info().rss / 1000000)
+    if process.memory_info().rss > MEMORY_CAP:
+        process.kill()
 
     # Perform pooling
-    print("pooling")
     sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
 
     # Normalize embeddings
-    print("normalizing")
     sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
 
     print("sending back")
@@ -121,19 +124,19 @@ def match_website_text(fact_check_text, website_text):
         new_website_sentences = []
         counter = 0
         new_sentence = ''
-        print("len(website_sentences)", len(website_sentences))
+        # print("len(website_sentences)", len(website_sentences))
         for sen in website_sentences:
             new_sentence += sen
             counter += 1
             if counter % sentence_group_size == 0:
                 new_website_sentences.append(new_sentence)
                 new_sentence = ''
-        print("len(new_website_sentences)", len(new_website_sentences))
+        # print("len(new_website_sentences)", len(new_website_sentences))
         website_sentences = new_website_sentences
 
-    print(len(website_sentences))
+    # print(len(website_sentences))
     website_sentences += fact_check_text_sentence
-    print(len(website_sentences))
+    # print(len(website_sentences))
     
     # print(fact_check_text_sentence)
     # print(website_sentences)
@@ -141,10 +144,16 @@ def match_website_text(fact_check_text, website_text):
     # print("website sentences: ", website_sentences)
 
     #Compute embedding for both lists
-    print("encoding")
-    print("starting embedding 1")
+    # print("encoding")
+    # print("starting embedding 1")
     embeddings1 = encode_with_model(website_sentences)
-    print("finished embeddings1")
+    # TODO: break this into groups of 40 sentences or something
+    # print("finished embeddings1")
+
+    process = psutil.Process(os.getpid())
+    print("finished embeddings, CURRENT MEMORY USAGE: ", process.memory_info().rss / 1000000)
+    if process.memory_info().rss > MEMORY_CAP:
+        process.kill()
     # embeddings2 = encode_with_model(website_sentences)
     # embeddings1 = model.encode(fact_check_text_sentence, convert_to_tensor=True)
     # embeddings2 = model.encode(website_sentences, convert_to_tensor=True)
@@ -157,6 +166,10 @@ def match_website_text(fact_check_text, website_text):
     cosine_scores = []
     for emb_idx in range(len(embeddings1) - 1):
         cosine_scores.append([1 - cosine(embeddings1[-1], embeddings1[emb_idx])])
+    process = psutil.Process(os.getpid())
+    print("finished getting cosine scores, CURRENT MEMORY USAGE: ", process.memory_info().rss / 1000000)
+    if process.memory_info().rss > MEMORY_CAP:
+        process.kill()
 
     #Output the pairs with their score
     most_similar_idx = np.argmax(cosine_scores[0])
@@ -213,7 +226,7 @@ def extract_given_search_index(fact_check_text, search_results, context_size, se
     extracted_paragraph = extract_paragraph(target_text, website_text, context_size)
     # print(extracted_paragraph)
 
-    if similarity_score < 0.5:
+    if similarity_score < 0.25:
         return URL, "", "We could not scan this website. Please use the website link or use the next search result.", "Unknown", title
 
     return URL, target_text, extracted_paragraph, np.round(similarity_score, 2), title
@@ -240,12 +253,10 @@ def fact_check_top_result(fact_check_text, context_size=100):
     search_results = retrieve_top_search_result(fact_check_text)
 
     # Retrieve URL, paragraph, and similarity_score for top result
-    for i in range(3):
-        URL, extracted_text, extracted_paragraph, similarity_score, title = extract_given_search_index(fact_check_text, search_results, context_size, i)
-        if extracted_text != "":
-            break
-
-
+    # for i in range(3):
+    URL, extracted_text, extracted_paragraph, similarity_score, title = extract_given_search_index(fact_check_text, search_results, context_size, 0)
+        # if extracted_text != "":
+        #     break
 
     return search_results, URL, extracted_text, extracted_paragraph, similarity_score, title
 
