@@ -17,6 +17,8 @@ COPY retriever.py /app
 # should only have model.py, main.py, and retriever.py
 WORKDIR /app
 
+ENV PYTHONUNBUFFERED True
+
 RUN rm -rf /root/.cache
 
 CMD python main.py
