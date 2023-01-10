@@ -151,8 +151,8 @@ def extract_paragraph(target_text, all_text, OFFSET):
 # use this for bringing other results
 def extract_given_search_index(fact_check_text, search_results, context_size, search_index):
     print("extract_given_search_index!!")
-    # URL = search_results[search_index].get('link')
-    URL = 'https://en.wikipedia.org/wiki/Egyptian_pyramids'
+    URL = search_results[search_index].get('link')
+    # URL = 'https://en.wikipedia.org/wiki/Egyptian_pyramids'
 
     title = search_results[search_index].get('title')
 
