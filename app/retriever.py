@@ -15,7 +15,7 @@ import os
 
 num_sentences_to_use = 10
 similarity_score_threshold = 0.25
-num_google_searches = 1
+num_google_searches = 10
 # TODO: potentially upscale num_sentences_to_use as number of website sentences increase for higher accuracy
 
 # from sentence_transformers import SentenceTransformer, util
