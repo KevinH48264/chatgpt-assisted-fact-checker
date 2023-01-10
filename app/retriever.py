@@ -14,6 +14,8 @@ import re
 import os
 
 num_sentences_to_use = 10
+similarity_score_threshold = 0.25
+num_google_searches = 1
 # TODO: potentially upscale num_sentences_to_use as number of website sentences increase for higher accuracy
 
 # from sentence_transformers import SentenceTransformer, util
@@ -46,12 +48,13 @@ dev_key = os.getenv('DEV_KEY')
 # HELPER FUNCTIONS
 # 1. GOOGLE SEARCH TOP SEARCH RESULT
 def google_search(search_term, cse_id, **kwargs):
-        service = build("customsearch", "v1", developerKey=dev_key)
-        res = service.cse().list(q=search_term, cx=cse_id, **kwargs).execute()
-        return res['items']
+    service = build("customsearch", "v1", developerKey=dev_key)
+    res = service.cse().list(q=search_term, cx=cse_id, **kwargs).execute()
+    return res['items']
 
 def retrieve_top_search_result(fact_check_text):
-    results = google_search(fact_check_text, my_cse_id, num=3, lr="lang_en")
+    global num_google_searches
+    results = google_search(fact_check_text, my_cse_id, num=num_google_searches, lr="lang_en")
     return results
 
 # 2. WEB SCRAPE
@@ -99,11 +102,15 @@ def match_website_text(fact_check_text, website_text):
     # Match closest sentence in website to fact check
     # Two lists of sentences
     fact_check_text_sentence = [fact_check_text]
-    # TODO: use the tokenizer instead of splitting, or use nltk bc nltk isn't that intensive
-    pattern = r"([^.]*\.)"
-    website_sentences = re.findall(pattern, website_text)
+    pattern = r"(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s"
+    website_sentences = re.split(pattern, website_text)
+    if (len(website_sentences) < 2):
+        return 0.0, " "
+
     # website_sentences = nltk.sent_tokenize(website_text) # prevents us from using partition right now
     group_size = int(len(website_sentences) / num_sentences_to_use)
+    if group_size == 0:
+        group_size = 1
     split_sentences = [website_sentences[i:i + group_size] for i in range(0, len(website_sentences), group_size)]
     website_sentences = [''.join(split) for split in split_sentences]
 
@@ -124,7 +131,8 @@ def match_website_text(fact_check_text, website_text):
     similarity_score = cosine_scores[0][most_similar_idx]
     target_text = website_sentences[most_similar_idx]
 
-    if similarity_score > 0.25 and group_size > 2:
+    global similarity_score_threshold
+    if similarity_score > similarity_score_threshold and group_size > 2:
         # if group_size > num_sentences_to_use:
         #     # just go through another cycle of divide and conquer with num_sentences_to_use groups
         #     return match_website_text(fact_check_text, target_text)
@@ -172,7 +180,8 @@ def extract_paragraph(target_text, all_text, OFFSET):
 def extract_given_search_index(fact_check_text, search_results, context_size, search_index):
     print("extract_given_search_index!!")
     URL = search_results[search_index].get('link')
-    # URL = 'https://en.wikipedia.org/wiki/Egyptian_pyramids'
+    if (('.pdf' in URL) or ('.aspx' in URL) or ('.ps' in URL) or ('.xls' in URL) or ('.ppt' in URL) or ('.doc' in URL) or ('.rtf' in URL) or ('.svg' in URL) or ('.tex' in URL) or ('.txt' in URL) or ('.wml' in URL) or ('.xml' in URL)):
+        return URL, "", "We could not scan this website. Please use the website link or use the next search result.", "Unknown", ""
 
     title = search_results[search_index].get('title')
 
@@ -185,7 +194,8 @@ def extract_given_search_index(fact_check_text, search_results, context_size, se
     # Extract relevant paragraph webpage 
     extracted_paragraph = extract_paragraph(target_text, website_text, context_size)
 
-    if similarity_score < 0.25:
+    global similarity_score_threshold
+    if similarity_score < similarity_score_threshold:
         return URL, "", "We could not scan this website. Please use the website link or use the next search result.", "Unknown", title
 
     return URL, target_text, extracted_paragraph, np.round(similarity_score, 2), title
@@ -212,10 +222,12 @@ def fact_check_top_result(fact_check_text, context_size=100):
     search_results = retrieve_top_search_result(fact_check_text)
 
     # Retrieve URL, paragraph, and similarity_score for top result
-    for i in range(3):
+    global num_google_searches
+    for i in range(num_google_searches):
         URL, extracted_text, extracted_paragraph, similarity_score, title = extract_given_search_index(fact_check_text, search_results, context_size, i)
         if extracted_text != "":
             break
+        print("TRYING ANOTHER WEBSITE, ONTO WEBSITE INDEX ", i, " prev URL tried: ", URL)
 
     return search_results, URL, extracted_text, extracted_paragraph, similarity_score, title
 
