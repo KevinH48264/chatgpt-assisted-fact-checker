@@ -2,7 +2,6 @@ from googleapiclient.discovery import build
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 import requests
-# import nltk
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import os
@@ -12,12 +11,10 @@ from transformers import AutoTokenizer, AutoModel
 import torch
 import torch.nn.functional as F
 import re
-import psutil
 import os
-# nltk.download('punkt')
 
-MEMORY_CAP = 512000000000
-num_sentences_to_use = 50
+num_sentences_to_use = 10
+# TODO: potentially upscale num_sentences_to_use as number of website sentences increase for higher accuracy
 
 # from sentence_transformers import SentenceTransformer, util
 
@@ -80,23 +77,11 @@ def mean_pooling(model_output, attention_mask):
     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
 def encode_with_model(sentences):
-    global MEMORY_CAP
-
     encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
 
     # Compute token embeddings
-    process = psutil.Process(os.getpid())
-    print("computing, CURRENT MEMORY USAGE: ", process.memory_info().rss / 1000000)
-    if process.memory_info().rss > MEMORY_CAP:
-        process.kill()
-
     with torch.no_grad():
         model_output = model(**encoded_input)
-        
-    process = psutil.Process(os.getpid())
-    print("done computing, CURRENT MEMORY USAGE: ", process.memory_info().rss / 1000000)
-    if process.memory_info().rss > MEMORY_CAP:
-        process.kill()
 
     # Perform pooling
     sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
@@ -104,7 +89,7 @@ def encode_with_model(sentences):
     # Normalize embeddings
     sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
 
-    print("sending back")
+    print("sending back THIS # OF EMBEDDINGS: ", len(sentence_embeddings))
     return sentence_embeddings
 
 def match_website_text(fact_check_text, website_text):
@@ -118,33 +103,68 @@ def match_website_text(fact_check_text, website_text):
     pattern = r"([^.]*\.)"
     website_sentences = re.findall(pattern, website_text)
     # website_sentences = nltk.sent_tokenize(website_text) # prevents us from using partition right now
-    split_sentences = [website_sentences[i:i + num_sentences_to_use] for i in range(0, len(website_sentences), num_sentences_to_use)]
+    group_size = int(len(website_sentences) / num_sentences_to_use)
+    split_sentences = [website_sentences[i:i + group_size] for i in range(0, len(website_sentences), group_size)]
     website_sentences = [''.join(split) for split in split_sentences]
 
     # # print(len(website_sentences))
     website_sentences += fact_check_text_sentence
-    print("NUM COMBINED ENTENCES: ", len(website_sentences))
+    # print("NUM COMBINED SENTENCES: ", len(website_sentences), "with # sentences / group: ", group_size)
 
     #Compute embedding for both lists
-    process = psutil.Process(os.getpid())
-    # embeddings1 = encode_with_model(fact_check_text_sentence)
     embeddings2 = encode_with_model(website_sentences)
-    print("finished embeddings1, CURRENT MEMORY USAGE: ", process.memory_info().rss / 1000000)
 
     #Compute cosine-similarities
     print("getting embedding scores for this about of embeddings: ", len(embeddings2))
+    cosine_scores = cosine_similarity(embeddings2[-1, :].unsqueeze(0), embeddings2[:-1, :])
+    del embeddings2
+
+    #Output the pairs with their score
+    most_similar_idx = np.argmax(cosine_scores[0])
+    similarity_score = cosine_scores[0][most_similar_idx]
+    target_text = website_sentences[most_similar_idx]
+
+    if similarity_score > 0.25 and group_size > 2:
+        # if group_size > num_sentences_to_use:
+        #     # just go through another cycle of divide and conquer with num_sentences_to_use groups
+        #     return match_website_text(fact_check_text, target_text)
+        # just individually go through each sentence
+        return match_sentence_text_from_group(fact_check_text, target_text)
+
+    return similarity_score, target_text
+
+def match_sentence_text_from_group(fact_check_text, website_text):
+
+    # Match closest sentence in website to fact check
+    # Two lists of sentences
+    fact_check_text_sentence = [fact_check_text]
+
+    # TODO: use the tokenizer instead of splitting, or use nltk bc nltk isn't that intensive
+    pattern = r"([^.]*\.)"
+    website_sentences = re.findall(pattern, website_text)
+    print("diving deeper, there are this number of sentences: ", len(website_sentences))
+
+    # # print(len(website_sentences))
+    website_sentences += fact_check_text_sentence
+
+    #Compute embedding for both lists
+    embeddings2 = encode_with_model(website_sentences)
+
+    #Compute cosine-similarities
+    print("getting embedding scores for this amount of sentences in the group: ", len(embeddings2))
     cosine_scores = cosine_similarity(embeddings2[-1, :].unsqueeze(0), embeddings2[:-1, :])
 
     #Output the pairs with their score
     most_similar_idx = np.argmax(cosine_scores[0])
     similarity_score = cosine_scores[0][most_similar_idx]
     target_text = website_sentences[most_similar_idx]
-    # print("Most similar sentence: ", target_text, " \nWith a similarity score of ", similarity_score)
 
     return similarity_score, target_text
 
 # Extract relevant paragraph webpage 
 def extract_paragraph(target_text, all_text, OFFSET):
+    # print("all text: ", len(all_text))
+    # print("target text: ", len(target_text))
     partitions = all_text.partition(target_text)
     return "..." + partitions[0][-OFFSET:] + " <b> " + partitions[1] + " </b> " + partitions[2][:OFFSET] + "..."
 

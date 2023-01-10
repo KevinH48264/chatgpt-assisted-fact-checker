@@ -10,7 +10,7 @@ url = "http://0.0.0.0:8080/"
 # highlighted_text = "The Pyramid of Khufu is the largest Egyptian pyramid. It is the only one of the Seven Wonders of the Ancient World still in existence, despite its being the oldest wonder by about 2,000 years."
 highlighted_text = "The earliest known Egyptian pyramids are found at Saqqara, n"
 
-context_size = 60
+context_size = 100
 
 # Health check route
 @app.route("/isalive")
