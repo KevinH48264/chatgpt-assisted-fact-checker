@@ -7,8 +7,8 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 url = "http://0.0.0.0:8080/"
-# highlighted_text = "The Pyramid of Khufu is the largest Egyptian pyramid. It is the only one of the Seven Wonders of the Ancient World still in existence, despite its being the oldest wonder by about 2,000 years."
-highlighted_text = "What you do makes a difference, and you have to decide what kind of difference you want to make."
+highlighted_text = "Amid the march of progress throughout the modern world, evidence of Earth’s rich past exists in historical constructions that tell stories of human achievement."
+# highlighted_text = "What you do makes a difference, and you have to decide what kind of difference you want to make."
 
 context_size = 100
 

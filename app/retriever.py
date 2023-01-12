@@ -224,9 +224,11 @@ def fact_check_top_result(fact_check_text, context_size=100, current_URL=""):
 
     # Retrieve URL, paragraph, and similarity_score for top result
     global num_google_searches
-    current_URL = urlparse(current_URL).hostname
     for i in range(num_google_searches):
-        search_URL = urlparse(search_results[i].get('link')).hostname
+
+        # search_URL = urlparse(search_results[i].get('link')).hostname
+        domain = '{uri.netloc}'.format(uri=urlparse(search_results[i].get('link')))
+        search_URL = domain.replace('www.', '')  # as per your case
         print("current URL: ", current_URL, "search URL: ", search_URL)
         # don't return the same link
         if current_URL == search_URL:
