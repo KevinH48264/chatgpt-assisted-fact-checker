@@ -12,6 +12,7 @@ import torch
 import torch.nn.functional as F
 import re
 import os
+from urllib.parse import urlparse
 
 num_sentences_to_use = 10
 similarity_score_threshold = 0.25
@@ -54,7 +55,7 @@ def google_search(search_term, cse_id, **kwargs):
 
 def retrieve_top_search_result(fact_check_text):
     global num_google_searches
-    results = google_search(fact_check_text, my_cse_id, num=num_google_searches, lr="lang_en")
+    results = google_search(fact_check_text, my_cse_id, num=num_google_searches, lr="lang_en", cr="countryUS")
     return results
 
 # 2. WEB SCRAPE
@@ -215,7 +216,7 @@ def fact_check(fact_check_text, check_top_n, context_size=100):
     return URL_list, extracted_paragraph_list, similarity_score_list, most_similar_idx
 
 # function to return top search index paragraph and search results
-def fact_check_top_result(fact_check_text, context_size=100):
+def fact_check_top_result(fact_check_text, context_size=100, current_URL=""):
     print("Starting to find a top fact check source")
 
     # Retrieve top google search result
@@ -223,11 +224,18 @@ def fact_check_top_result(fact_check_text, context_size=100):
 
     # Retrieve URL, paragraph, and similarity_score for top result
     global num_google_searches
+    current_URL = urlparse(current_URL).hostname
     for i in range(num_google_searches):
+        search_URL = urlparse(search_results[i].get('link')).hostname
+        print("current URL: ", current_URL, "search URL: ", search_URL)
+        # don't return the same link
+        if current_URL == search_URL:
+            continue
+
         URL, extracted_text, extracted_paragraph, similarity_score, title = extract_given_search_index(fact_check_text, search_results, context_size, i)
         if extracted_text != "":
             break
-        print("TRYING ANOTHER WEBSITE, ONTO WEBSITE INDEX ", i, " prev URL tried: ", URL)
+        print("TRYING ANOTHER WEBSITE, THIS WEBSITE INDEX DIDN'T WORK ", i, " prev URL tried: ", URL)
 
     return search_results, URL, extracted_text, extracted_paragraph, similarity_score, title
 

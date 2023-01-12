@@ -8,7 +8,7 @@ cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 url = "http://0.0.0.0:8080/"
 # highlighted_text = "The Pyramid of Khufu is the largest Egyptian pyramid. It is the only one of the Seven Wonders of the Ancient World still in existence, despite its being the oldest wonder by about 2,000 years."
-highlighted_text = "The earliest known Egyptian pyramids are found at Saqqara, n"
+highlighted_text = "What you do makes a difference, and you have to decide what kind of difference you want to make."
 
 context_size = 100
 
@@ -29,6 +29,7 @@ def fact_check():
     '''
     # WORKS WITH THIS COMMENTED OUT
     # print("fact checking!")
+    current_URL = ""
     if request.method == 'GET':
       global highlighted_text
       global context_size
@@ -39,10 +40,12 @@ def fact_check():
 
       highlighted_text = data['highlighted_text']
       context_size = data['context_size']
+      if 'current_URL' in data.keys():
+        current_URL = data['current_URL']
 
     # print("SEARCHING")
     print("search text: ", highlighted_text)
-    search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.fact_check_top_result(highlighted_text, context_size)
+    search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.fact_check_top_result(highlighted_text, context_size, current_URL)
     # search_results = retriever.fact_check_top_result(highlighted_text, context_size)
 
     # print("DONE SEARCHING")
