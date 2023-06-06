@@ -1,4 +1,7 @@
-# chatgpt-assisted-fact-checker
+# ChatGPT Assisted Fact Checker
+
+## Purpose
+Chrome extension searches through Google with your highlighted sentence. Then, it takes the top website results and finds and scores the most similar sentence. 
 
 ## How to run:
 1. Clone the repo
