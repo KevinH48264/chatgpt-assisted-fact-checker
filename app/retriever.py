@@ -15,7 +15,7 @@ import os
 from urllib.parse import urlparse
 
 num_sentences_to_use = 10
-similarity_score_threshold = 0.25
+similarity_score_threshold = 0.5
 num_google_searches = 10
 # TODO: potentially upscale num_sentences_to_use as number of website sentences increase for higher accuracy
 
@@ -131,12 +131,15 @@ def match_website_text(fact_check_text, website_text):
     most_similar_idx = np.argmax(cosine_scores[0])
     similarity_score = cosine_scores[0][most_similar_idx]
     target_text = website_sentences[most_similar_idx]
+    print("THIS WAS THE SIMILARITY SCORE: ", similarity_score)
 
     global similarity_score_threshold
     if similarity_score > similarity_score_threshold and group_size > 2:
+        print("going deeperrr")
         # if group_size > num_sentences_to_use:
         #     # just go through another cycle of divide and conquer with num_sentences_to_use groups
         #     return match_website_text(fact_check_text, target_text)
+
         # just individually go through each sentence
         return match_sentence_text_from_group(fact_check_text, target_text)
 
@@ -167,6 +170,7 @@ def match_sentence_text_from_group(fact_check_text, website_text):
     most_similar_idx = np.argmax(cosine_scores[0])
     similarity_score = cosine_scores[0][most_similar_idx]
     target_text = website_sentences[most_similar_idx]
+    print("THIS WAS THE SIMILARITY SCORE FROM GOING DEEPER: ", similarity_score, target_text, cosine_scores[0])
 
     return similarity_score, target_text
 
@@ -179,7 +183,8 @@ def extract_paragraph(target_text, all_text, OFFSET):
 
 # use this for bringing other results
 def extract_given_search_index(fact_check_text, search_results, context_size, search_index):
-    print("extract_given_search_index!!")
+    global similarity_score_threshold
+    print("extract_given_search_index!!", similarity_score_threshold)
     URL = search_results[search_index].get('link')
     if (('.pdf' in URL) or ('.aspx' in URL) or ('.ps' in URL) or ('.xls' in URL) or ('.ppt' in URL) or ('.doc' in URL) or ('.rtf' in URL) or ('.svg' in URL) or ('.tex' in URL) or ('.txt' in URL) or ('.wml' in URL) or ('.xml' in URL)):
         return URL, "", "We could not scan this website. Please use the website link or use the next search result.", "Unknown", ""
@@ -195,7 +200,6 @@ def extract_given_search_index(fact_check_text, search_results, context_size, se
     # Extract relevant paragraph webpage 
     extracted_paragraph = extract_paragraph(target_text, website_text, context_size)
 
-    global similarity_score_threshold
     if similarity_score < similarity_score_threshold:
         return URL, "", "We could not scan this website. Please use the website link or use the next search result.", "Unknown", title
 
@@ -216,8 +220,11 @@ def fact_check(fact_check_text, check_top_n, context_size=100):
     return URL_list, extracted_paragraph_list, similarity_score_list, most_similar_idx
 
 # function to return top search index paragraph and search results
-def fact_check_top_result(fact_check_text, context_size=100, current_URL=""):
+def fact_check_top_result(fact_check_text, context_size=100, current_URL="", similarity_score_threshold_input=0.5):
     print("Starting to find a top fact check source")
+
+    global similarity_score_threshold
+    similarity_score_threshold = similarity_score_threshold_input
 
     # Retrieve top google search result
     search_results = retrieve_top_search_result(fact_check_text)

@@ -30,6 +30,7 @@ def fact_check():
     # WORKS WITH THIS COMMENTED OUT
     # print("fact checking!")
     current_URL = ""
+    similarity_score_threshold = 0.6
     if request.method == 'GET':
       global highlighted_text
       global context_size
@@ -38,14 +39,21 @@ def fact_check():
 
       data = request.get_json()
 
+      # to get highlighted text
       highlighted_text = data['highlighted_text']
+
+      # to get how many chars they want
       context_size = data['context_size']
+
+      # so you don't return the current URL you are on
       if 'current_URL' in data.keys():
         current_URL = data['current_URL']
 
-    # print("SEARCHING")
+      if 'similarity_score_threshold' in data.keys():
+        similarity_score_threshold = data['similarity_score_threshold']
+      
     print("search text: ", highlighted_text)
-    search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.fact_check_top_result(highlighted_text, context_size, current_URL)
+    search_results, URL, extracted_text, extracted_paragraph, similarity_score, title = retriever.fact_check_top_result(highlighted_text, context_size, current_URL, similarity_score_threshold_input=similarity_score_threshold)
     # search_results = retriever.fact_check_top_result(highlighted_text, context_size)
 
     # print("DONE SEARCHING")

@@ -1,5 +1,5 @@
 runtime: python310
 env_variables:
-  MY_CSE_ID: a10644ac9f98240e0
-  DEV_KEY: AIzaSyArTHHjw0yThFoB5iP3qiPFifDZLUR9zaw
+  MY_CSE_ID: ${MY_CSE_ID}
+  DEV_KEY: ${DEV_KEY}
 entrypoint: gunicorn -b:8080 main:app
